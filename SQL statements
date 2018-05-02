@@ -1,0 +1,152 @@
+1a
+
+select avg(x.time) avg_time, m.max_temperature, m.date from (SELECT max(weather.outside_temperature) as max_temperature, public.weather.date
+                FROM public.weather
+                WHERE date 
+                between '2006-06-01'
+                AND '2006-06-30'
+                group by date
+                order by max(weather.outside_temperature) desc) m
+join (select time, date, t.outside_temperature from weather t) x
+on m.max_temperature = x.outside_temperature and m.date = x.date
+group by m.max_temperature, m.date
+order by date
+
+1b
+
+select m.max_temperature, min(x.time), m.date from (SELECT max(weather.outside_temperature) as max_temperature, public.weather.date
+                FROM public.weather
+                WHERE date 
+                between '2006-06-01'
+                AND '2006-06-30'
+                group by date
+                order by max(weather.outside_temperature) desc) m
+join (select time, date, t.outside_temperature from weather t) x
+on m.max_temperature = x.outside_temperature and m.date = x.date
+group by m.max_temperature, m.date
+order by date
+
+1c
+
+select x.time, m.max_temperature, m.date from (SELECT max(weather.outside_temperature) as max_temperature, public.weather.date
+                FROM public.weather
+                WHERE date 
+                between '2006-06-01'
+                AND '2006-06-30'
+                group by date
+                order by max(weather.outside_temperature) desc limit 10) m
+join (select time, date, t.outside_temperature from weather t) x
+on m.max_temperature = x.outside_temperature and m.date = x.date
+order by date
+
+2.
+
+SELECT w.hi_temperature, w.low_temperature, w.date, w.time
+                FROM public.weather w
+                WHERE date 
+                between '2006-06-01'
+                AND '2006-06-09'
+                and w.hi_temperature > 21.3 and w.hi_temperature < 23.3
+                or w.low_temperature > 10.1 and w.low_temperature < 10.5
+                order by w.outside_temperature desc
+
+3.
+
+SELECT w.outside_temperature, w.date, w.time
+                FROM public.weather w
+                WHERE w.date 
+                between '2006-06-01'
+                AND '2006-06-09'
+                --group by w.date, w.time
+                order by w.date, w.time
+
+
+SELECT round(avg(w.outside_temperature)::numeric,1)--, w.date
+                FROM public.weather w
+                WHERE w.date 
+                between '2006-06-01'
+                AND '2006-06-30'
+                group by w.date
+                order by w.date
+
+
+
+select w.date, w.time, w.outside_temperature INTO public.weather_test
+FROM public.weather w
+WHERE w.date
+between '2006-06-01'
+AND '2006-06-09'
+order by w.date, w.time
+
+update public.weather_test t
+SET t.date = DATE_ADD(w.date, INTERVAL +1 MONTH),
+t.outside_temperature = w.outside_temperature + (abs((SELECT round(avg(w.outside_temperature)::numeric,1)
+                FROM public.weather w
+                WHERE w.date 
+                between '2006-06-01'
+                AND '2006-06-30') - w.outside_temperature)*25)/ (abs((SELECT round(avg(w.outside_temperature)::numeric,1)
+                                                                        FROM public.weather w
+                                                                        WHERE w.date 
+                                                                        between '2006-06-01'
+                                                                        AND '2006-06-30')
+;
+
+select round((25 + (((13.5 - a.outside_temperature) *25) / 13.5))::numeric,1) as prognosis, date, time from (select s.date, s.time, s.outside_temperature from (select weather.date, weather.time, weather.outside_temperature from weather where weather.date
+                between '2006-06-01'
+                AND '2006-06-09') s) a
+
+
+3.
+select INTO public.weather_test
+FROM public.weather w
+WHERE w.date
+between '2006-06-01'
+AND '2006-06-09'
+order by w.date, w.time
+
+update public.weather_test t
+SET t.date = DATE_ADD(w.date, INTERVAL +1 MONTH),
+select round((25 + (((13.5 - a.outside_temperature) *25) / 13.5))::numeric,1) as prognosis, date, time from (select s.date, s.time, s.outside_temperature from (select weather.date, weather.time, weather.outside_temperature from weather where weather.date
+                between '2006-06-01'
+                AND '2006-06-09') s) a
+
+only adds positive values. 
+
+
+3. 
+
+This statement nearly does the trick, but still gives errors. If the one above and this one are a bit reworked, they would do the job.
+
+select round((25 + ((((SELECT round(avg(weather.outside_temperature)::numeric,1)
+                FROM weather
+                WHERE weather.date
+                between '2006-06-01'
+                AND '2006-06-09') - a.outside_temperature) *25) / (SELECT round(avg(weather.outside_temperature)::numeric,1)
+                                                                        FROM public.weather
+                                                                        WHERE weather.date 
+                                                                        between '2006-06-01'
+                                                                        AND '2006-06-09')))::numeric,1)
+                                                                        case when ((SELECT round(avg(weather.outside_temperature)::numeric,1)
+                FROM weather
+                WHERE weather.date
+                between '2006-06-01'
+                AND '2006-06-09') - a.outside_temperature) < 0 then round((25 + ((((SELECT round(avg(weather.outside_temperature)::numeric,1)
+                FROM weather
+                WHERE weather.date
+                between '2006-06-01'
+                AND '2006-06-09') - a.outside_temperature) *25) / (SELECT round(avg(weather.outside_temperature)::numeric,1)
+                                                                        FROM public.weather
+                                                                        WHERE weather.date 
+                                                                        between '2006-06-01'
+                                                                        AND '2006-06-09')))::numeric,1) else round((25 - ((((SELECT round(avg(weather.outside_temperature)::numeric,1)
+                FROM weather
+                WHERE weather.date
+                between '2006-06-01'
+                AND '2006-06-09') - a.outside_temperature) *25) / (SELECT round(avg(weather.outside_temperature)::numeric,1)
+                                                                        FROM public.weather
+                                                                        WHERE weather.date 
+                                                                        between '2006-06-01'
+                                                                        AND '2006-06-09')))::numeric,1) end as prognosis
+                                                                        from (select s.outside_temperature from (select weather.outside_temperature from weather where weather.date
+                between '2006-06-01'
+                AND '2006-06-09') s) a
