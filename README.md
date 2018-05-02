@@ -1,3 +1,2 @@
 # data-analysis-assignment
-
-asd
+SQL queries for the given assignments
