@@ -22,7 +22,6 @@ inportslist = subprocess.Popen('ovs-vsctl list-ports ' + bridge,
 		       shell=True,
 		       stdout=subprocess.PIPE,
 		       universal_newlines=True)
-		       #where universal_newlines=True makes reads from subprocess.stdout return str, not bytes.
 
 inName = Label(root,
                anchor=NW,
@@ -78,7 +77,6 @@ qos = False
 def apply_qos(value):
 	global qos
 	qos = True
-	#print "value:"+value
 
 for i in mylist:
 	mynewlist.append(i.decode().strip("\n"))
